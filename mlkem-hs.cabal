@@ -7,21 +7,19 @@ cabal-version: 3.0
 name:           mlkem-hs
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/mlkem-hs#readme>
-homepage:       https://github.com/githubuser/mlkem-hs#readme
-bug-reports:    https://github.com/githubuser/mlkem-hs/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2026 Author name here
+homepage:       https://github.com/arjunkhandkar/mlkem-hs#readme
+bug-reports:    https://github.com/arjunkhandkar/mlkem-hs/issues
+author:         Arjun Khandkar
+maintainer:     khandkararjun@gmail.com
+copyright:      2026 Arjun Khandkar
 license:        BSD-3-Clause
-license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
-    CHANGELOG.md
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/mlkem-hs
+  location: https://github.com/arjunkhandkar/mlkem-hs
 
 flag mlkem1024
   manual: True
@@ -97,22 +95,6 @@ library
         cbits/mlkem-native/src/native/x86_64/src/compress_consts.c
         cbits/mlkem-native/src/native/x86_64/src/consts.c
         cbits/mlkem-native/src/native/x86_64/src/rej_uniform_table.c
-
-executable mlkem-hs-exe
-  main-is: Main.hs
-  other-modules:
-      Paths_mlkem_hs
-  autogen-modules:
-      Paths_mlkem_hs
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , entropy
-    , memory
-    , mlkem-hs
-  default-language: Haskell2010
 
 test-suite mlkem-hs-test
   type: exitcode-stdio-1.0

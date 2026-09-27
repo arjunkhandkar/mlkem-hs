@@ -2,8 +2,7 @@
 {-# LANGUAGE CPP #-}
 
 module Lib
-    ( someFunc
-    , keyPair
+    ( keyPair
     , encaps
     , decaps
     ) where
@@ -13,9 +12,6 @@ import Foreign.C (CInt(CInt))
 import Control.Monad (unless)
 import Data.ByteArray (ByteArrayAccess, Bytes, ScrubbedBytes, alloc, allocRet, withByteArray)
 import qualified Data.ByteArray as ByteArrayAccess
-
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
 
 #if MLK_HS_PARAM == 1024
 
