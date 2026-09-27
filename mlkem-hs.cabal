@@ -1,0 +1,132 @@
+cabal-version: 3.0
+
+-- This file has been generated from package.yaml by hpack version 0.39.6.
+--
+-- see: https://github.com/sol/hpack
+
+name:           mlkem-hs
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/mlkem-hs#readme>
+homepage:       https://github.com/githubuser/mlkem-hs#readme
+bug-reports:    https://github.com/githubuser/mlkem-hs/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2026 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/mlkem-hs
+
+flag mlkem1024
+  manual: True
+  default: False
+
+flag mlkem512
+  manual: True
+  default: False
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_mlkem_hs
+  autogen-modules:
+      Paths_mlkem_hs
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  cc-options: -DMLK_CONFIG_NO_RANDOMIZED_API
+  include-dirs:
+      cbits/mlkem-native
+  c-sources:
+      cbits/mlkem-native/src/compress.c
+      cbits/mlkem-native/src/debug.c
+      cbits/mlkem-native/src/indcpa.c
+      cbits/mlkem-native/src/kem.c
+      cbits/mlkem-native/src/poly.c
+      cbits/mlkem-native/src/poly_k.c
+      cbits/mlkem-native/src/sampling.c
+      cbits/mlkem-native/src/verify.c
+      cbits/mlkem-native/src/fips202/fips202.c
+      cbits/mlkem-native/src/fips202/fips202x4.c
+      cbits/mlkem-native/src/fips202/keccakf1600.c
+  build-depends:
+      base >=4.7 && <5
+    , entropy
+    , memory
+  default-language: Haskell2010
+  if flag(mlkem1024)
+    cpp-options: -DMLK_HS_PARAM=1024
+    cc-options: -DMLK_CONFIG_PARAMETER_SET=1024
+  if flag(mlkem512) && !flag(mlkem1024)
+    cpp-options: -DMLK_HS_PARAM=512
+    cc-options: -DMLK_CONFIG_PARAMETER_SET=512
+  if !flag(mlkem512) && !flag(mlkem1024)
+    cpp-options: -DMLK_HS_PARAM=768
+    cc-options: -DMLK_CONFIG_PARAMETER_SET=768
+  if arch(x86_64)
+    cc-options: -mavx2 -mbmi2
+    asm-sources:
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_intt_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_ntt_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_nttfrombytes_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_ntttobytes_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_nttunpack_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_poly_compress_d10_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_poly_compress_d11_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_poly_compress_d4_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_poly_compress_d5_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_poly_decompress_d10_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_poly_decompress_d11_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_poly_decompress_d4_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_poly_decompress_d5_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_poly_mulcache_compute_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_polyvec_basemul_acc_montgomery_cached_k2_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_polyvec_basemul_acc_montgomery_cached_k3_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_polyvec_basemul_acc_montgomery_cached_k4_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_reduce_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_rej_uniform_avx2_asm.S
+        cbits/mlkem-native/src/native/x86_64/src/mlkem_tomont_avx2_asm.S
+    c-sources:
+        cbits/mlkem-native/src/native/x86_64/src/compress_consts.c
+        cbits/mlkem-native/src/native/x86_64/src/consts.c
+        cbits/mlkem-native/src/native/x86_64/src/rej_uniform_table.c
+
+executable mlkem-hs-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_mlkem_hs
+  autogen-modules:
+      Paths_mlkem_hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , entropy
+    , memory
+    , mlkem-hs
+  default-language: Haskell2010
+
+test-suite mlkem-hs-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_mlkem_hs
+  autogen-modules:
+      Paths_mlkem_hs
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , entropy
+    , memory
+    , mlkem-hs
+  default-language: Haskell2010

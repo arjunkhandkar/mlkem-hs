@@ -1,0 +1,101 @@
+name:                mlkem-hs
+version:             0.1.0.0
+github:              "githubuser/mlkem-hs"
+license:             BSD-3-Clause
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2026 Author name here"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/mlkem-hs#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- entropy
+- memory
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+flags:
+  mlkem512:
+    manual: true
+    default: false
+  mlkem1024:
+    manual: true
+    default: false
+
+library:
+  source-dirs: src
+
+  include-dirs:
+    - cbits/mlkem-native
+
+  c-sources:
+    - cbits/mlkem-native/src/*.c
+    - cbits/mlkem-native/src/fips202/*.c
+
+  cc-options:
+    - -DMLK_CONFIG_NO_RANDOMIZED_API
+
+  when:
+    - condition: flag(mlkem1024)
+      cc-options: -DMLK_CONFIG_PARAMETER_SET=1024
+      cpp-options: -DMLK_HS_PARAM=1024
+
+    - condition: flag(mlkem512) && !flag(mlkem1024)
+      cc-options: -DMLK_CONFIG_PARAMETER_SET=512
+      cpp-options: -DMLK_HS_PARAM=512
+
+    - condition: "!flag(mlkem512) && !flag(mlkem1024)"
+      cc-options: -DMLK_CONFIG_PARAMETER_SET=768
+      cpp-options: -DMLK_HS_PARAM=768
+
+    - condition: arch(x86_64)
+      c-sources:
+        - cbits/mlkem-native/src/native/x86_64/src/*.c
+      asm-sources:
+        - cbits/mlkem-native/src/native/x86_64/src/*.S
+      cc-options:
+        - -mavx2
+        - -mbmi2
+
+executables:
+  mlkem-hs-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - mlkem-hs
+
+tests:
+  mlkem-hs-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - mlkem-hs

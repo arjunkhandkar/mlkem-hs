@@ -1,0 +1,3 @@
+#define MLK_CONFIG_PARAMETER_SET 768
+#define MLK_CONFIG_MULTILEVEL_BUILD
+#include "src/kem.c"
