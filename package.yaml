@@ -5,23 +5,22 @@ license:             BSD-3-Clause
 author:              "Arjun Khandkar"
 maintainer:          "khandkararjun@gmail.com"
 copyright:           "2026 Arjun Khandkar"
+description:         Please see the README on GitHub at <https://github.com/githubuser/mlkem-hs#readme>
 
 extra-source-files:
 - README.md
 
-# Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
-
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/mlkem-hs#readme>
+language: GHC2021
 
 dependencies:
 - base >= 4.7 && < 5
 - entropy
 - memory
+
+default-extensions:
+  - CPP
+  - DerivingStrategies
+  - GeneralizedNewtypeDeriving
 
 ghc-options:
 - -Wall
@@ -76,6 +75,14 @@ library:
       cc-options:
         - -mavx2
         - -mbmi2
+
+    - condition: arch(aarch64)
+      c-sources:
+        - cbits/mlkem-native/src/native/aarch64/src/*.c
+      asm-sources:
+        - cbits/mlkem-native/src/native/aarch64/src/*.S
+      cc-options:
+        - -march=armv8-a+crypto
 
 tests:
   mlkem-hs-test:
