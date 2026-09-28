@@ -5,7 +5,7 @@ license:             BSD-3-Clause
 author:              "Arjun Khandkar"
 maintainer:          "khandkararjun@gmail.com"
 copyright:           "2026 Arjun Khandkar"
-description:         Please see the README on GitHub at <https://github.com/githubuser/mlkem-hs#readme>
+description:         ML-KEM primitives that use the mlkem-native implementation
 
 extra-source-files:
 - README.md

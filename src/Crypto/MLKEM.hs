@@ -1,5 +1,5 @@
 {- |
-Module: Crypto.MLKEM 
+Module: Crypto.MLKEM
 Copyright: (c) 2026 Arjun Khandkar
 License: MIT
 Maintainer: khandkararjun@gmail.com
@@ -8,18 +8,30 @@ Stability: experimental
 Haskell bindings for ML-KEM primitives from mlkem-native
 -}
 module Crypto.MLKEM
-  ( keyPair
+  ( -- * Key pair generation
+    keyPair
+
+    -- * Encapsulation and decapsulation
   , encaps
   , decaps
+
+    -- * Types
+  , PublicKey (..)
+  , SecretKey (..)
+  , Ciphertext (..)
+  , SharedSecret (..)
+
+    -- * Errors
+  , CryptoError (..)
   ) where
 
+import Control.Exception (Exception, throwIO, try)
 import Control.Monad (unless, when)
 import Data.ByteArray (ByteArrayAccess, Bytes, ScrubbedBytes, alloc, allocRet, withByteArray)
-import qualified Data.ByteArray as ByteArrayAccess
+import Data.ByteArray qualified as ByteArrayAccess
 import Foreign (Ptr, Word8, castPtr)
 import Foreign.C (CInt (CInt))
 import System.IO.Unsafe (unsafePerformIO)
-import Control.Exception (throwIO, try, Exception)
 
 #if MLK_HS_PARAM == 1024
 
@@ -87,60 +99,60 @@ errorCodeInvalidSecretKey :: CInt
 errorCodeInvalidSecretKey = -5
 
 -- | Possible errors that can be returned by an ML-KEM operation
-data CryptoError =
+data CryptoError
+  = -- | Public key validation failed (FIPS-203 section 7.2, "modulus check")
     PublicKeyValidationFailed
- -- ^ Public key validation failed (FIPS-203 section 7.2, "modulus check")
-  | SecretKeyValidationFailed
- -- ^ Secret key validation failed (FIPS-203 section 7.3, "hash check")
-  | InvalidPublicKeySize
- -- ^ Invalid public key size.
- --
- -- Public key sizes for the ML-KEM parameter sets are as follows:
- --
- -- +---------------+------------+
- -- | Parameter set | Key size   |
- -- +===============+============+
- -- | ML-KEM-512    | 800 bytes  |
- -- +---------------+------------+
- -- | ML-KEM-768    | 1184 bytes |
- -- +---------------+------------+
- -- | ML-KEM-1024   | 1568 bytes |
- -- +---------------+------------+
-  | InvalidEncapsulationSeedSize
- -- ^ Invalid encapsulation seed size. The standard size across all parameter sets is 32 bytes.
-  | InvalidKeygenSeedSize
- -- ^ Invalid keygen seed size. The standard size across all parameter sets is 64 bytes.
-  | InvalidSecretKeySize
- -- ^ Invalid secret key size.
- --
- -- Secret key sizes for the ML-KEM parameter sets are as follows:
- --
- -- +---------------+------------+
- -- | Parameter set | Key size   |
- -- +===============+============+
- -- | ML-KEM-512    | 1632 bytes |
- -- +---------------+------------+
- -- | ML-KEM-768    | 2400 bytes |
- -- +---------------+------------+
- -- | ML-KEM-1024   | 3168 bytes |
- -- +---------------+------------+
-  | InvalidCiphertextSize
- -- ^ Invalid ciphertext size.
- --
- -- Ciphertext sizes for the ML-KEM parameter sets are as follows:
- --
- -- +---------------+------------+
- -- | Parameter set | Text size  |
- -- +===============+============+
- -- | ML-KEM-512    | 768 bytes  |
- -- +---------------+------------+
- -- | ML-KEM-768    | 1088 bytes |
- -- +---------------+------------+
- -- | ML-KEM-1024   | 1568 bytes |
- -- +---------------+------------+
-  | UnexpectedStatus CInt
- -- ^ ML-KEM operation returned an unexpected exit status
- deriving Show
+  | -- | Secret key validation failed (FIPS-203 section 7.3, "hash check")
+    SecretKeyValidationFailed
+  | -- | Invalid public key size.
+    --
+    -- Public key sizes for the ML-KEM parameter sets are as follows:
+    --
+    -- +---------------+------------+
+    -- | Parameter set | Key size   |
+    -- +===============+============+
+    -- | ML-KEM-512    | 800 bytes  |
+    -- +---------------+------------+
+    -- | ML-KEM-768    | 1184 bytes |
+    -- +---------------+------------+
+    -- | ML-KEM-1024   | 1568 bytes |
+    -- +---------------+------------+
+    InvalidPublicKeySize
+  | -- | Invalid encapsulation seed size. The standard size across all parameter sets is 32 bytes.
+    InvalidEncapsulationSeedSize
+  | -- | Invalid keygen seed size. The standard size across all parameter sets is 64 bytes.
+    InvalidKeygenSeedSize
+  | -- | Invalid secret key size.
+    --
+    -- Secret key sizes for the ML-KEM parameter sets are as follows:
+    --
+    -- +---------------+------------+
+    -- | Parameter set | Key size   |
+    -- +===============+============+
+    -- | ML-KEM-512    | 1632 bytes |
+    -- +---------------+------------+
+    -- | ML-KEM-768    | 2400 bytes |
+    -- +---------------+------------+
+    -- | ML-KEM-1024   | 3168 bytes |
+    -- +---------------+------------+
+    InvalidSecretKeySize
+  | -- | Invalid ciphertext size.
+    --
+    -- Ciphertext sizes for the ML-KEM parameter sets are as follows:
+    --
+    -- +---------------+------------+
+    -- | Parameter set | Text size  |
+    -- +===============+============+
+    -- | ML-KEM-512    | 768 bytes  |
+    -- +---------------+------------+
+    -- | ML-KEM-768    | 1088 bytes |
+    -- +---------------+------------+
+    -- | ML-KEM-1024   | 1568 bytes |
+    -- +---------------+------------+
+    InvalidCiphertextSize
+  | -- | ML-KEM operation returned an unexpected exit status
+    UnexpectedStatus CInt
+  deriving (Show)
 
 instance Exception CryptoError
 
@@ -179,7 +191,7 @@ newtype Ciphertext = Ciphertext Bytes
     )
 
 -- | Shared secret derived after encapsulation and decapsulation
-newtype Secret = Secret ScrubbedBytes
+newtype SharedSecret = SharedSecret ScrubbedBytes
   deriving newtype
     ( ByteArrayAccess.ByteArrayAccess
     , ByteArrayAccess.ByteArray
@@ -213,9 +225,9 @@ encaps
   -- ^ ML-KEM public key
   -> seed
   -- ^ 32 bytes of entropy
-  -> Either CryptoError (Ciphertext, Secret)
+  -> Either CryptoError (Ciphertext, SharedSecret)
 encaps publicKey seed = unsafePerformIO $ try $ do
-  unless (ByteArrayAccess.length publicKey == publicKeyBytes) $ throwIO InvalidPublicKeySize 
+  unless (ByteArrayAccess.length publicKey == publicKeyBytes) $ throwIO InvalidPublicKeySize
   unless (ByteArrayAccess.length seed == encapsulationSeedBytes) $ throwIO InvalidEncapsulationSeedSize
   (sharedSecret, ciphertext) <- allocRet cipherTextBytes $ \ctPtr ->
     alloc sharedSecretBytes $ \ssPtr ->
@@ -230,7 +242,7 @@ encaps publicKey seed = unsafePerformIO $ try $ do
 decaps
   :: Ciphertext
   -> SecretKey
-  -> Either CryptoError Secret
+  -> Either CryptoError SharedSecret
 decaps ciphertext secretKey = unsafePerformIO $ try $ do
   unless (ByteArrayAccess.length ciphertext == cipherTextBytes) $ throwIO InvalidCiphertextSize
   unless (ByteArrayAccess.length secretKey == secretKeyBytes) $ throwIO InvalidSecretKeySize
