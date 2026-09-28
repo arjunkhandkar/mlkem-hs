@@ -28,11 +28,12 @@ jobs:
       - name: Test
         run: stack test
 
-      - name: Upload Stack build artifacts
+      - name: Upload cabal file
         uses: actions/upload-artifact@v4
         with:
-          name: stack-build
-          path: .stack-work
+          name: cabal-file
+          path: "*.cabal"
+          if-no-files-found: error
 
   docs:
     name: Haddock
@@ -50,6 +51,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Download cabal file
+        uses: actions/download-artifact@v4
+        with:
+          name: cabal-file
 
       - name: Setup Haskell
         uses: haskell-actions/setup@v2
